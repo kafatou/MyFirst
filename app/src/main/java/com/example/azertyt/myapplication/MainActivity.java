@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -14,6 +15,11 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
@@ -29,13 +35,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView precedent,valider,suivant;
+    private Button precedent,valider,suivant;
     private MainActivity activity;
+    String item;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
     ArFragment arFragment;
     boolean b=false;
-    ArrayList<String>Commande=new ArrayList<String>();
+    ArrayList<Plat>Commande=new ArrayList<Plat>();
     ModelRenderable lampPostRenderable;
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -80,26 +87,63 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v)
             {
                 AlertDialog.Builder myCommand=new AlertDialog.Builder(activity);
-                myCommand.setMessage("Donner la taille de la pizza");
+                View mView=getLayoutInflater().inflate(R.layout.spinner_dialog,null);
+                myCommand.setTitle("Détails de la commande");
+                myCommand.setMessage("Combien vous en voulez??");
+                Spinner mSpinner=(Spinner) mView.findViewById(R.id.spin);
+                ArrayAdapter<String> adapter=new ArrayAdapter<String>(MainActivity.this,
+                        android.R.layout.simple_spinner_item,
+                        getResources().getStringArray(R.array.list));
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                mSpinner.setAdapter(adapter);
+                mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+                    {
+                        item=adapterView.getItemAtPosition(i).toString();
+                    }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
+                myCommand.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        Plat P=new Plat(item,null);
+                        Commande.add(P);
+                    }
+                });
+                myCommand.setNegativeButton("Annuler",null);
+                myCommand.setView(mView);
+                AlertDialog dialog=myCommand.create();
+                dialog.show();
             }
         });
         suivant.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
             {
-                b=true;
-                nextAct(b);
+                Intent intent =new Intent(getApplicationContext(),Pizza.class);
+                if (!Commande.isEmpty())
+                {
+                    intent.putExtra("Commande",Commande);
+                }
+                startActivity(intent);
             }
         });
-    }
-    public void nextAct(boolean b)
-    {
-        if (b==true)
-        {
-            Intent intent =new Intent(getApplicationContext(),Pizza.class);
-            intent.putExtra("model",Commande);
-            startActivity(intent);
-        }
+        precedent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent =new Intent(getApplicationContext(),Shushie.class);
+                if (!Commande.isEmpty())
+                {
+                    intent.putExtra("Commande",Commande);
+                }
+                startActivity(intent);
+            }
+        });
     }
     public static boolean checkIsSupportedDeviceOrFinish(final Activity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {

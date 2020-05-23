@@ -3,7 +3,10 @@ package com.example.azertyt.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +14,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,9 +32,13 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.util.ArrayList;
+
 public class Shushie extends AppCompatActivity
 {
     TextView precedent,valider,suivant;
+    String item;
+    ArrayList<Plat> Commande=new ArrayList<Plat>();
     private static final String TAG = com.example.azertyt.myapplication.MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
     ArFragment arFragment;
@@ -44,6 +54,60 @@ public class Shushie extends AppCompatActivity
             return;
         }
         setContentView(R.layout.activity_main);
+        String inputData=this.getIntent().getExtras().getString("Commande");
+        valider.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                AlertDialog.Builder myCommand=new AlertDialog.Builder(Shushie.this);
+                View mView=getLayoutInflater().inflate(R.layout.spinner_dialog,null);
+                myCommand.setTitle("Détails de la commande");
+                myCommand.setMessage("Combien vous en voulez??");
+
+                Spinner mSpinner=(Spinner) mView.findViewById(R.id.spin);
+                ArrayAdapter<String> adapter=new ArrayAdapter<String>(Shushie.this,
+                        android.R.layout.simple_spinner_item,
+                        getResources().getStringArray(R.array.list));
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                mSpinner.setAdapter(adapter);
+                mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+                    {
+                        item=adapterView.getItemAtPosition(i).toString();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
+                myCommand.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        Plat P1=new Plat(item,null);
+                        Commande.add(P1);
+                    }
+                });
+                myCommand.setNegativeButton("Annuler",null);
+                myCommand.setView(mView);
+                AlertDialog dialog=myCommand.create();
+                dialog.show();
+            }
+        });
+        suivant.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent =new Intent(getApplicationContext(),MainActivity.class);
+                if (!Commande.isEmpty())
+                {
+                    intent.putExtra("Commande",Commande);
+                }
+                startActivity(intent);
+            }
+        });
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         ModelRenderable.builder()
                 .setSource(this, Uri.parse("shushie.sfb"))
@@ -70,21 +134,6 @@ public class Shushie extends AppCompatActivity
                     lamp.select();
                 }
         );
-    }
-    public void Listener(View v)
-    {
-        if (v.getId() ==R.id.pcdt)
-        {
-
-        }
-        else if (v.getId()==R.id.vld)
-        {
-
-        }
-        else
-        {
-
-        }
     }
     public static boolean checkIsSupportedDeviceOrFinish(final Activity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {

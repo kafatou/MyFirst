@@ -22,21 +22,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/pcdt"
-            android:onClick="Listener"
             android:text="Précédent"/>
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/vld"
             android:text="Valider"
-            android:onClick="Listener"
             android:layout_marginLeft="65dp"
             android:layout_marginRight="65dp"/>
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/svt"
-            android:onClick="Listener"
             android:text="Suivant"/>
     </LinearLayout>
 
