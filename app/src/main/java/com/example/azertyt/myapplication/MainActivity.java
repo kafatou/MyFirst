@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,20 +33,30 @@ import com.google.ar.sceneform.ux.TransformableNode;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private Button precedent,valider,suivant;
     private MainActivity activity;
-    String item;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
     ArFragment arFragment;
-    boolean b=false;
-    ArrayList<Plat>Commande=new ArrayList<Plat>();
+    private static ArrayList<Plat>Commande=new ArrayList<Plat>();
     ModelRenderable lampPostRenderable;
+
+    private static final ArrayList<Plat>liste_plat=new ArrayList<Plat>();
+    private static  final HashMap<String,String> listeChemin=new HashMap<>();
+    private static String chemin="model.sfb";
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
+
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.activity=this;
@@ -58,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         ModelRenderable.builder()
-                .setSource(this, Uri.parse("model.sfb"))
+                .setSource(this, Uri.parse(chemin))
                 .build()
                 .thenAccept(renderable -> lampPostRenderable = renderable)
                 .exceptionally(throwable -> {
@@ -87,36 +98,37 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v)
             {
                 AlertDialog.Builder myCommand=new AlertDialog.Builder(activity);
-                View mView=getLayoutInflater().inflate(R.layout.spinner_dialog,null);
-                myCommand.setTitle("Détails de la commande");
-                myCommand.setMessage("Combien vous en voulez??");
-                Spinner mSpinner=(Spinner) mView.findViewById(R.id.spin);
-                ArrayAdapter<String> adapter=new ArrayAdapter<String>(MainActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        getResources().getStringArray(R.array.list));
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                mSpinner.setAdapter(adapter);
-                mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
-                    {
-                        item=adapterView.getItemAtPosition(i).toString();
-                    }
-                    @Override
-                    public void onNothingSelected(AdapterView<?> adapterView) {
 
-                    }
-                });
+                TextView textView1= new TextView(MainActivity.this);
+                textView1.setText("donner le nombre de plats");
+                EditText editNbre=new EditText(MainActivity.this);
+                TextView textView2= new TextView(MainActivity.this);
+                textView1.setText("donner la taille");
+                EditText editTaille=new EditText(MainActivity.this);
+                LinearLayout layout=new LinearLayout(MainActivity.this);
+                layout.addView(textView1);
+                layout.addView(editNbre);
+                layout.addView(textView2);
+                layout.addView(editTaille);
+
+                myCommand.setTitle("Détails de la commande");
+                myCommand.setView(layout);
                 myCommand.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)
                     {
-                        Plat P=new Plat(item,null);
-                        Commande.add(P);
+                        int nbre=Integer.valueOf(editNbre.getText().toString());
+                        String taille=editTaille.getText().toString();
+
+                        String valeur=listeChemin.get(chemin);
+                        Plat plat=getPlat(valeur);
+                        plat.setNbrePlat(nbre);
+                        plat.setTaille(taille);
+
+                        Commande.add(plat);
                     }
                 });
                 myCommand.setNegativeButton("Annuler",null);
-                myCommand.setView(mView);
                 AlertDialog dialog=myCommand.create();
                 dialog.show();
             }
@@ -125,26 +137,37 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                Intent intent =new Intent(getApplicationContext(),Pizza.class);
-                if (!Commande.isEmpty())
+
+                Set<Map.Entry<String, String>> entrees = listeChemin.entrySet ( ) ;
+                Iterator <Map.Entry<String, String>> iter = entrees.iterator ( ) ;
+                while(iter.hasNext())
                 {
-                    intent.putExtra("Commande",Commande);
+                    Map.Entry<String, String> entree =  iter.next ( ) ;
+                    chemin=entree.getKey();
                 }
+                Intent intent =new Intent(getApplicationContext(),MainActivity.class);
                 startActivity(intent);
             }
         });
         precedent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent =new Intent(getApplicationContext(),Shushie.class);
-                if (!Commande.isEmpty())
+
+                Set<Map.Entry<String, String>> entrees = listeChemin.entrySet ( ) ;
+                Iterator <Map.Entry<String, String>> iter = entrees.iterator ( ) ;
+                while(iter.hasPrevious())
                 {
-                    intent.putExtra("Commande",Commande);
+                    Map.Entry<String, String> entree =  iter.previous() ;
+                    chemin=entree.getKey();
                 }
+                Intent intent =new Intent(getApplicationContext(),MainActivity.class);
                 startActivity(intent);
+
             }
         });
     }
+
+
     public static boolean checkIsSupportedDeviceOrFinish(final Activity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             Log.e(TAG, "Sceneform requires Android N or later");
@@ -164,5 +187,30 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    public static final void AjoutPlat()
+    {
+        Plat p1=new Plat("idNouille","nouille",0,null);
+        Plat p2=new Plat("idPizza","pizza",0,null);
+
+        liste_plat.add(p1);
+        liste_plat.add(p2);
+
+        listeChemin.put("model.sfb",p1.getIdPlat());
+        listeChemin.put("pizza.sfb",p2.getIdPlat());
+    }
+
+    public static final Plat getPlat(String idPlat )
+    {
+        Plat plat=null;
+        Iterator iterator= liste_plat.iterator();
+        while(iterator.hasNext())
+        {
+            Plat plat1=(Plat)iterator.next();
+            if(plat1.getIdPlat().equals(idPlat))
+                plat=plat1;
+        }
+        return plat;
     }
 }
