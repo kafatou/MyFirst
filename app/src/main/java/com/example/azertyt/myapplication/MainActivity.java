@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.0;
     ArFragment arFragment;
-    private static ArrayList<Plat>Commande=new ArrayList<Plat>();
+    private static final ArrayList<Plat>Commande=new ArrayList<Plat>();
     ModelRenderable lampPostRenderable;
 
     private static final ArrayList<Plat>liste_plat=new ArrayList<Plat>();
@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     private static String chemin="model.sfb";
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
-
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
