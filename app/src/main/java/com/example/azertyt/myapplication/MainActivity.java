@@ -154,9 +154,9 @@ public class MainActivity extends AppCompatActivity {
 
                 Set<Map.Entry<String, String>> entrees = listeChemin.entrySet ( ) ;
                 Iterator <Map.Entry<String, String>> iter = entrees.iterator ( ) ;
-                while(iter.hasPrevious())
+                while(iter.hasNext())
                 {
-                    Map.Entry<String, String> entree =  iter.previous() ;
+                    Map.Entry<String, String> entree =  iter.next() ;
                     chemin=entree.getKey();
                 }
                 Intent intent =new Intent(getApplicationContext(),MainActivity.class);
